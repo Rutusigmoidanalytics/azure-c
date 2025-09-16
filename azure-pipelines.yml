@@ -5,43 +5,53 @@ pool:
   name: Rutu   # your self-hosted agent pool
 
 steps:
-# Step 1: Checkout repo
-- checkout: self
+- checkout: self   # download your repo first
 
-# Step 2: Install Node.js
+# Install Node.js
 - task: NodeTool@0
   inputs:
     versionSpec: '20.x'
   displayName: 'Install Node.js'
 
-# Step 3: Build React frontend
+# Build React frontend
 - script: |
     cd sales-frontend          # package.json is here
     npm install
     npm run build
   displayName: 'npm install and build React frontend'
 
-# Step 4: Archive build output into a zip (correct structure for Azure)
+# ✅ Copy staticwebapp.config.json into build folder
+- script: |
+    echo '{
+      "navigationFallback": {
+        "rewrite": "index.html",
+        "exclude": ["/static/*", "/assets/*", "/*.css", "/*.js"]
+      }
+    }' > sales-frontend/build/staticwebapp.config.json
+  displayName: 'Add staticwebapp.config.json for SPA routing'
+
+# Archive the build into a zip
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: 'sales-frontend/build'
-    includeRootFolder: false                      # ✅ ensures index.html is at root of zip
-    archiveFile: '$(Build.ArtifactStagingDirectory)/reactapp.zip'
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: '$(Build.ArtifactStagingDirectory)/react-app.zip'
     replaceExistingArchive: true
-  displayName: 'Archive React build folder'
+  displayName: 'Archive React build'
 
-# Step 5: Publish artifact (optional, for debugging)
+# Publish artifacts so they can be used in release pipeline
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/reactapp.zip'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
-  displayName: 'Publish build artifact'
+  displayName: 'Publish build artifacts'
 
-# Step 6: Deploy React app to Azure Web App
+# Deploy to Azure Web App
 - task: AzureWebApp@1
   inputs:
-    azureSubscription: 'MyAzureConnection'        # Your service connection name
-    appName: 'rutugk'                             # Your Azure Web App name
-    package: '$(Build.ArtifactStagingDirectory)/reactapp.zip'
+    azureSubscription: 'MyAzureConnection'   # service connection
+    appName: 'rutugk'                         # your WebApp name
+    package: '$(Build.ArtifactStagingDirectory)/react-app.zip'
   displayName: 'Deploy React app to Azure WebApp'
