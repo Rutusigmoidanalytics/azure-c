@@ -40,7 +40,7 @@ steps:
 - task: AzureWebApp@1
   inputs:
     azureSubscription: 'MyAzureConnection'   # service connection name
-    appName: 'my-react-webapp'               # your Web App name
+    appName: 'rutugk'               # your Web App name
     package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
   displayName: 'Deploy React app to Azure WebApp'
 
