@@ -15,23 +15,32 @@ steps:
 
 # Build React frontend
 - script: |
-    cd sales-frontend          # package.json is here
+    cd sales-frontend
     npm install
     npm run build
   displayName: 'npm install and build React frontend'
 
-# Copy the React build folder to artifacts staging directory
+# Copy React build folder to artifacts staging directory
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'sales-frontend/build'       # correct build folder
-    Contents: '**/*'                           # copy everything inside build/
+    SourceFolder: 'sales-frontend/build'
+    Contents: '**/*'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
   displayName: 'Copy React build artifacts'
 
-# Publish artifacts so they can be used in release pipeline
+# Publish build artifacts
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
   displayName: 'Publish build artifacts'
+
+# ✅ Deploy to Azure Web App
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'MyAzureConnection'   # service connection name
+    appName: 'my-react-webapp'               # your Web App name
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+  displayName: 'Deploy React app to Azure WebApp'
+
