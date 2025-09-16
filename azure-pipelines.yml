@@ -5,7 +5,8 @@ pool:
   name: Rutu   # your self-hosted agent pool
 
 steps:
-- checkout: self   # download your repo first
+# Checkout source code
+- checkout: self
 
 # Install Node.js
 - task: NodeTool@0
@@ -28,19 +29,18 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
   displayName: 'Copy React build artifacts'
 
-# Publish build artifacts
-- task: PublishBuildArtifacts@1
+# Archive build folder into a zip file for deployment
+- task: ArchiveFiles@2
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-  displayName: 'Publish build artifacts'
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: false
+    archiveFile: '$(Build.ArtifactStagingDirectory)/reactapp.zip'
+  displayName: 'Archive build folder'
 
-# ✅ Deploy to Azure Web App
+# Deploy to Azure Web App
 - task: AzureWebApp@1
   inputs:
-    azureSubscription: 'MyAzureConnection'   # service connection name
-    appName: 'rutugk'               # your Web App name
-    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+    azureSubscription: 'MyAzureConnection'   # service connection name in DevOps
+    appName: 'rutugk'                        # exact Web App name in Azure
+    package: '$(Build.ArtifactStagingDirectory)/reactapp.zip'
   displayName: 'Deploy React app to Azure WebApp'
-
