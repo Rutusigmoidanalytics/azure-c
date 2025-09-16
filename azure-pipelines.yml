@@ -1,5 +1,5 @@
 trigger:
-- master
+- master   # run pipeline when master branch is updated
 
 pool:
   name: Rutu   # your self-hosted agent pool
