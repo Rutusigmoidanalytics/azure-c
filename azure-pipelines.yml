@@ -2,7 +2,7 @@ trigger:
 - master
 
 pool:
-  name: supriya   # your self-hosted agent pool
+  name: Rutu   # your self-hosted agent pool
 
 steps:
 - checkout: self   # download your repo first
